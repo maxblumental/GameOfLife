@@ -40,14 +40,14 @@ public class GenerationImpl implements Generation {
 
     @Override
     public void print(OutputStream outputStream) {
-        try (PrintWriter writer = new PrintWriter(outputStream)) {
-            for (boolean[] row : aliveness) {
-                writer.print("|");
-                for (boolean isAlive : row) {
-                    writer.printf(" %d", isAlive ? 1 : 0);
-                }
-                writer.print(" |\n");
+        PrintWriter writer = new PrintWriter(outputStream);
+        for (boolean[] row : aliveness) {
+            writer.print("|");
+            for (boolean isAlive : row) {
+                writer.printf(" %d", isAlive ? 1 : 0);
             }
+            writer.print(" |\n");
         }
+        writer.flush();
     }
 }

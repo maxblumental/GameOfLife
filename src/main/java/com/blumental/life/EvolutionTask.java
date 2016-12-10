@@ -1,56 +1,64 @@
 package com.blumental.life;
 
+import com.blumental.life.model.CellRange;
+
 import java.util.concurrent.Callable;
 
 public class EvolutionTask implements Callable<Void> {
 
     private final int generationSize;
 
-    private final Point fromPoint;
-    private final Point toPoint;
+    private final CellRange cellRange;
 
     private Generation prevGeneration;
     private Generation nextGeneration;
 
-    public EvolutionTask(int generationSize, Point fromPoint, Point toPoint) {
+    public EvolutionTask(int generationSize, CellRange cellRange) {
         this.generationSize = generationSize;
-        this.fromPoint = fromPoint;
-        this.toPoint = toPoint;
+        this.cellRange = cellRange;
     }
 
     @Override
     public Void call() throws Exception {
-        for (int i = fromPoint.getX(); i < toPoint.getX(); i++) {
-            for (int j = fromPoint.getY(); j < toPoint.getY(); j++) {
+        for (int i = cellRange.fromX(); i <= cellRange.toX(); i++) {
+            for (int j = cellRange.fromY(); j <= cellRange.toY(); j++) {
                 updateCell(i, j);
             }
         }
-        Generation tmp = prevGeneration;
+
+        Generation generation = prevGeneration;
         prevGeneration = nextGeneration;
-        nextGeneration = tmp;
+        nextGeneration = generation;
+
         return null;
     }
 
+    public Generation getFinalGeneration() {
+        return prevGeneration;
+    }
+
     private void updateCell(int i, int j) {
-        int generationSize = nextGeneration.size();
-        int liveNeighboursCount = 0;
         boolean isAlive = prevGeneration.isCellAlive(i, j);
+        int aliveNeighboursCount = getAliveNeighboursCount(i, j);
+
+        if (isAlive) {
+            boolean isStillAlive = aliveNeighboursCount == 2 || aliveNeighboursCount == 3;
+            nextGeneration.setCellState(i, j, isStillAlive);
+        } else {
+            boolean canBeReproduced = aliveNeighboursCount == 3;
+            nextGeneration.setCellState(i, j, canBeReproduced);
+        }
+    }
+
+    private int getAliveNeighboursCount(int i, int j) {
+        int liveNeighboursCount = 0;
         for (int k = i - 1; k < i + 2; k++) {
             for (int l = j - 1; l < j + 2; l++) {
                 if (k == i && l == j) continue;
                 liveNeighboursCount += tryNeighbour(k, l);
             }
         }
-
-        if (isAlive) {
-            if (liveNeighboursCount != 2 && liveNeighboursCount != 3) {
-                nextGeneration.setCellState(i, j, false);
-            }
-        } else {
-            if (liveNeighboursCount == 3) {
-                nextGeneration.setCellState(i, j, true);
-            }
-        }
+        return liveNeighboursCount;
     }
 
     private int tryNeighbour(int i, int j) {
@@ -68,7 +76,7 @@ public class EvolutionTask implements Callable<Void> {
         this.nextGeneration = nextGeneration;
     }
 
-    public boolean isValidCell(int i, int j) {
+    private boolean isValidCell(int i, int j) {
         return isValidCoordinate(i) && isValidCoordinate(j);
     }
 

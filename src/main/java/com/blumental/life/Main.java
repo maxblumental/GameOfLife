@@ -1,5 +1,6 @@
 package com.blumental.life;
 
+import com.blumental.life.model.CellRange;
 import com.blumental.life.model.InputPOJO;
 
 import java.io.IOException;
@@ -21,23 +22,22 @@ public class Main {
         run(Files.newInputStream(path), System.out);
     }
 
-    private static void run(InputStream inputStream, OutputStream outputStream) {
+    private static void run(InputStream inputStream, OutputStream outputStream) throws IOException {
         InputReaderImpl inputReader = new InputReaderImpl();
         InputPOJO inputPOJO = inputReader.readInput(inputStream);
 
-        Generation prevGeneration = inputPOJO.getGeneration();
-        Generation nextGeneration = prevGeneration.copy();
+        Generation generation = inputPOJO.getGeneration();
+        Generation nextGeneration = generation.copy();
 
-        int threadNumber = getRuntime().availableProcessors();
-        List<EvolutionTask> evolutionTasks = createEvolutionTasks(prevGeneration.size(), threadNumber);
+        List<EvolutionTask> evolutionTasks = createEvolutionTasks(generation.size());
 
         for (EvolutionTask task : evolutionTasks) {
-            task.setPrevGeneration(prevGeneration);
+            task.setPrevGeneration(generation);
             task.setNextGeneration(nextGeneration);
         }
 
         int stepNumber = inputPOJO.getStepNumber();
-        ExecutorService threadPool = newFixedThreadPool(threadNumber);
+        ExecutorService threadPool = newFixedThreadPool(getThreadNumber());
         for (int i = 0; i < stepNumber; i++) {
             try {
                 threadPool.invokeAll(evolutionTasks);
@@ -47,23 +47,21 @@ public class Main {
 
         threadPool.shutdown();
 
-        prevGeneration.print(outputStream);
-        nextGeneration.print(outputStream);
+        Generation finalGeneration = evolutionTasks.get(0).getFinalGeneration();
+        finalGeneration.print(outputStream);
     }
 
-    private static List<EvolutionTask> createEvolutionTasks(int generationSize, int threadNumber) {
+    private static int getThreadNumber() {
+        return getRuntime().availableProcessors();
+    }
+
+    private static List<EvolutionTask> createEvolutionTasks(int generationSize) {
         List<EvolutionTask> evolutionTasks = new ArrayList<>();
-        int shareWidth = generationSize / threadNumber;
+        List<CellRange> cellRanges = LoadDistribution.getCellRanges(generationSize, getThreadNumber());
 
-        for (int i = 0; i < threadNumber; i++) {
-            int fromX = shareWidth * i;
-            int toX = fromX + shareWidth;
-
-            Point fromPoint = new Point(fromX, 0);
-            Point toPoint = new Point(toX, generationSize - 1);
-
-            EvolutionTask runnable = new EvolutionTask(generationSize, fromPoint, toPoint);
-            evolutionTasks.add(runnable);
+        for (CellRange cellRange : cellRanges) {
+            EvolutionTask task = new EvolutionTask(generationSize, cellRange);
+            evolutionTasks.add(task);
         }
 
         return evolutionTasks;
