@@ -16,7 +16,7 @@ public class CellRange {
     }
 
     public int fromY() {
-        return fromCell.getX();
+        return fromCell.getY();
     }
 
     public int toX() {

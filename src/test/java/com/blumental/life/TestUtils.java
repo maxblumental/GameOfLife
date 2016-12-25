@@ -18,10 +18,10 @@ public class TestUtils {
     }
 
     public static void assertRangeIs(CellRange range, int i1, int j1, int i2, int j2) {
-        assertEquals(i1, range.fromX());
-        assertEquals(j1, range.fromY());
-        assertEquals(i2, range.toX());
-        assertEquals(j2, range.toY());
+        assertEquals(format("[%d][%d]", i1, j1), i1, range.fromX());
+        assertEquals(format("[%d][%d]", i1, j1), j1, range.fromY());
+        assertEquals(format("[%d][%d]", i2, j2), i2, range.toX());
+        assertEquals(format("[%d][%d]", i2, j2), j2, range.toY());
     }
 
     public static String sampleInputString() {

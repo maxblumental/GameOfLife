@@ -17,7 +17,7 @@ public class LoadDistributionTest {
         int threadNumber = 4;
 
         //when
-        List<CellRange> cellRanges = LoadDistribution.getCellRanges(generationSize, threadNumber);
+        List<CellRange> cellRanges = LoadDistribution.getLoadDistribution(generationSize, threadNumber);
 
         //then
         assertRangeIs(cellRanges.get(0), 0, 0, 0, 0);
@@ -30,7 +30,7 @@ public class LoadDistributionTest {
         int threadNumber = 4;
 
         //when
-        List<CellRange> cellRanges = LoadDistribution.getCellRanges(generationSize, threadNumber);
+        List<CellRange> cellRanges = LoadDistribution.getLoadDistribution(generationSize, threadNumber);
 
         //then
         assertRangeIs(cellRanges.get(0), 0, 0, 1, 1);
@@ -43,13 +43,13 @@ public class LoadDistributionTest {
         int generationSize = 8;
 
         //when
-        List<CellRange> cellRanges = LoadDistribution.getCellRanges(generationSize, threadNumber);
+        List<CellRange> cellRanges = LoadDistribution.getLoadDistribution(generationSize, threadNumber);
 
         //then
         assertEquals(4, cellRanges.size());
-        assertRangeIs(cellRanges.get(0), 0, 0, 1, 7);
-        assertRangeIs(cellRanges.get(1), 2, 2, 3, 7);
-        assertRangeIs(cellRanges.get(2), 4, 4, 5, 7);
-        assertRangeIs(cellRanges.get(3), 6, 6, 7, 7);
+        assertRangeIs(cellRanges.get(0), 0, 0, 7, 1);
+        assertRangeIs(cellRanges.get(1), 0, 2, 7, 3);
+        assertRangeIs(cellRanges.get(2), 0, 4, 7, 5);
+        assertRangeIs(cellRanges.get(3), 0, 6, 7, 7);
     }
 }

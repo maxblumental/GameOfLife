@@ -28,10 +28,10 @@ public class GenerationImpl implements Generation {
 
     @Override
     public Generation copy() {
-        int generationSize = aliveness.length;
-        GenerationImpl generation = new GenerationImpl(generationSize);
-        for (int i = 0; i < generationSize; i++) {
-            for (int j = 0; j < generationSize; j++) {
+        int size = aliveness.length;
+        GenerationImpl generation = new GenerationImpl(size);
+        for (int i = 0; i < size; i++) {
+            for (int j = 0; j < size; j++) {
                 generation.setCellState(i, j, aliveness[i][j]);
             }
         }

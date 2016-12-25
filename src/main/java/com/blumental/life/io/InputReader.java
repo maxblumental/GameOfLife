@@ -1,4 +1,4 @@
-package com.blumental.life;
+package com.blumental.life.io;
 
 import com.blumental.life.model.InputPOJO;
 

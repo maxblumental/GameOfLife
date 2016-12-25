@@ -9,7 +9,7 @@ import java.util.List;
 
 public class LoadDistribution {
 
-    public static List<CellRange> getCellRanges(int generationSize, int threadNumber) {
+    public static List<CellRange> getLoadDistribution(int generationSize, int threadNumber) {
         if (generationSize < 2 * threadNumber) {
             return getSingleRange(generationSize);
         }
@@ -28,8 +28,8 @@ public class LoadDistribution {
         int shareWidth = generationSize / threadNumber;
         List<CellRange> cellRanges = new ArrayList<>();
         for (int i = 0; i < threadNumber; i++) {
-            Cell fromCell = new Cell(i * shareWidth, 0);
-            Cell toCell = new Cell((i + 1) * shareWidth - 1, generationSize - 1);
+            Cell fromCell = new Cell(0, i * shareWidth);
+            Cell toCell = new Cell(generationSize - 1, (i + 1) * shareWidth - 1);
             CellRange cellRange = new CellRange(fromCell, toCell);
             cellRanges.add(cellRange);
         }

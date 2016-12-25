@@ -1,5 +1,6 @@
-package com.blumental.life;
+package com.blumental.life.io;
 
+import com.blumental.life.GenerationImpl;
 import com.blumental.life.model.InputPOJO;
 
 import java.io.InputStream;

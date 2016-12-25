@@ -1,5 +1,7 @@
 package com.blumental.life;
 
+import com.blumental.life.io.InputReader;
+import com.blumental.life.io.InputReaderImpl;
 import com.blumental.life.model.InputPOJO;
 import org.junit.Before;
 import org.junit.Test;

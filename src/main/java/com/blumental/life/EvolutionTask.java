@@ -2,24 +2,60 @@ package com.blumental.life;
 
 import com.blumental.life.model.CellRange;
 
-import java.util.concurrent.Callable;
+import java.util.concurrent.atomic.AtomicInteger;
 
-public class EvolutionTask implements Callable<Void> {
+public class EvolutionTask implements Runnable {
 
     private final int generationSize;
-
     private final CellRange cellRange;
-
+    private final int stepNumber;
+    private final int threadNumber;
+    private final AtomicInteger currentIteration;
+    private final AtomicInteger completeCount;
     private Generation prevGeneration;
     private Generation nextGeneration;
 
-    public EvolutionTask(int generationSize, CellRange cellRange) {
+    public EvolutionTask(int generationSize, CellRange cellRange, int stepNumber,
+                         AtomicInteger currentIteration, AtomicInteger completeCount, int threadNumber) {
         this.generationSize = generationSize;
         this.cellRange = cellRange;
+        this.stepNumber = stepNumber;
+        this.threadNumber = threadNumber;
+        this.currentIteration = currentIteration;
+        this.completeCount = completeCount;
     }
 
     @Override
-    public Void call() throws Exception {
+    public void run() {
+        for (int i = 0; i < stepNumber; i++) {
+            if (currentIteration.get() != i) {
+                synchronized (EvolutionTask.class) {
+                    try {
+                        while (currentIteration.get() != i) {
+                            EvolutionTask.class.wait();
+                        }
+                    } catch (InterruptedException e) {
+                        System.err.println("An error during sleep!");
+                    }
+                }
+            }
+            makeIteration();
+            synchronized (EvolutionTask.class) {
+                int count = completeCount.incrementAndGet();
+                if (count == threadNumber) {
+                    currentIteration.incrementAndGet();
+                    completeCount.set(0);
+                    EvolutionTask.class.notifyAll();
+                }
+            }
+        }
+    }
+
+    public Generation getCurrentGeneration() {
+        return prevGeneration;
+    }
+
+    private void makeIteration() {
         for (int i = cellRange.fromX(); i <= cellRange.toX(); i++) {
             for (int j = cellRange.fromY(); j <= cellRange.toY(); j++) {
                 updateCell(i, j);
@@ -29,12 +65,6 @@ public class EvolutionTask implements Callable<Void> {
         Generation generation = prevGeneration;
         prevGeneration = nextGeneration;
         nextGeneration = generation;
-
-        return null;
-    }
-
-    public Generation getFinalGeneration() {
-        return prevGeneration;
     }
 
     private void updateCell(int i, int j) {

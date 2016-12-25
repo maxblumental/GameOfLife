@@ -5,6 +5,8 @@ import com.blumental.life.model.CellRange;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 import static com.blumental.life.TestUtils.assertGenerationIs;
 import static com.blumental.life.TestUtils.sampleGeneration;
 
@@ -14,14 +16,28 @@ public class EvolutionTaskTest {
 
     @Before
     public void setUp() throws Exception {
+        int generationSize = 4;
+
         Cell from = new Cell(0, 0);
-        Cell to = new Cell(3, 3);
+        Cell to = new Cell(generationSize - 1, generationSize - 1);
         CellRange cellRange = new CellRange(from, to);
-        task = new EvolutionTask(4, cellRange);
+
+        int stepNumber = 1;
+
+        AtomicInteger currentIteration = new AtomicInteger(0);
+        AtomicInteger completeCount = new AtomicInteger(0);
+
+        int threadNumber = 1;
+
+        task = new EvolutionTask(
+                generationSize, cellRange, stepNumber,
+                currentIteration, completeCount,
+                threadNumber
+        );
     }
 
     @Test
-    public void call() throws Exception {
+    public void evolveOneStep() throws Exception {
         //given
         Generation generation = sampleGeneration();
         Generation nextGeneratoin = generation.copy();
@@ -29,7 +45,7 @@ public class EvolutionTaskTest {
         task.setNextGeneration(nextGeneratoin);
 
         //when
-        task.call();
+        task.run();
 
         //then
         boolean[][] afterOneStep = {
