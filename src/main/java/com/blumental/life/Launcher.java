@@ -15,37 +15,35 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static com.blumental.life.io.RandomInputFileGenerator.RANDOM_INPUT_FILENAME;
 import static java.util.concurrent.Executors.newFixedThreadPool;
 
 public class Launcher {
 
-    private final int threadNumber;
     private List<EvolutionTask> evolutionTasks;
 
-    public Launcher(int threadNumber) {
-        this.threadNumber = threadNumber;
-    }
+    private int threadNumber;
 
     public static void main(String[] args) throws IOException {
 
-        InputStream inputStream = Files.newInputStream(Paths.get(RANDOM_INPUT_FILENAME));
+        InputStream inputStream = Files.newInputStream(Paths.get("input.txt"));
         int threadNumber = Runtime.getRuntime().availableProcessors();
 
-        Launcher launcher = new Launcher(threadNumber);
+        Launcher launcher = new Launcher();
 
-        launcher.setUp(inputStream);
+        InputPOJO inputPOJO = new InputReaderImpl().readInput(inputStream);
+        Generation generation = inputPOJO.getGeneration();
+        int stepNumber = inputPOJO.getStepNumber();
+        launcher.setUp(generation, stepNumber, threadNumber);
+
         launcher.evolve();
+
+        launcher.getResultGeneration().print(System.out);
     }
 
-    public void setUp(InputStream inputStream) {
-        InputPOJO inputPOJO = getInput(inputStream);
-
-        Generation generation = inputPOJO.getGeneration();
-        Generation nextGeneration = generation.copy();
-
-        int stepNumber = inputPOJO.getStepNumber();
-        evolutionTasks = prepareEvolutionTasks(generation, nextGeneration, stepNumber);
+    public void setUp(Generation initialGeneration, int stepNumber, int threadNumber) {
+        this.threadNumber = threadNumber;
+        Generation nextGeneration = initialGeneration.copy();
+        evolutionTasks = prepareEvolutionTasks(initialGeneration, nextGeneration, stepNumber);
     }
 
     public void evolve() {
@@ -65,11 +63,6 @@ public class Launcher {
             return evolutionTasks.get(0).getCurrentGeneration();
         }
         return null;
-    }
-
-    private InputPOJO getInput(InputStream inputStream) {
-        InputReaderImpl inputReader = new InputReaderImpl();
-        return inputReader.readInput(inputStream);
     }
 
     private List<EvolutionTask> prepareEvolutionTasks(Generation generation,
